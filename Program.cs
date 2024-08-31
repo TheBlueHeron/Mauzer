@@ -45,6 +45,13 @@ internal partial class Program
     [LibraryImport("gdi32.dll")]
     private static partial int GetDeviceCaps(IntPtr hdc, int nIndex);
 
+    [LibraryImport("user32.dll")]
+    private static partial int GetWindowDC(IntPtr hwnd);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool InvalidateRect(IntPtr hwnd, IntPtr lpRect, [MarshalAs(UnmanagedType.Bool)] bool bErase);
+
     [LibraryImport("user32.dll", SetLastError = true)]
     private static partial void mouse_event(uint flags, int x, int y, int data, int extraInfo);
 
@@ -93,6 +100,7 @@ internal partial class Program
                 ShowWindow(GetConsoleWindow(), 6); // minimize console window
             }
             mouse_event((uint)(MouseFlags.Move | MouseFlags.Absolute), (int)(65535.0 * (s.X + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sW), (int)(65535.0 * (s.Y + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sH), 0, 0);
+            InvalidateRect(new IntPtr(GetWindowDC(IntPtr.Zero)), 0, true);
         }
     }
 }
