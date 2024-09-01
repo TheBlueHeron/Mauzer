@@ -6,7 +6,7 @@ namespace Mauzer;
 
 internal partial class Program
 {
-    #region Imports
+    #region Imports and objects
 
     [Flags]
     public enum MouseFlags
@@ -62,17 +62,16 @@ internal partial class Program
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-    private static NotifyIcon? tray;
+    private const string appName = "Mauzer";
 
     #endregion
 
     private static void Main()
     {
+        Console.Title = appName;
         var mover = new Mover(GetConsoleWindow());
         var moveTimer = new Timer(mover.Move, null, 3000, 5000);
-
-        SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED); // prevent Idle-to-Sleep
-        tray = new NotifyIcon
+        var tray = new NotifyIcon
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
             Text = Console.Title,
@@ -88,6 +87,7 @@ internal partial class Program
             Environment.ExitCode = 0;
             Application.Exit();
         };
+        SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED); // prevent Idle-to-Sleep
         mover.ToggleWindow(true);
         Console.WriteLine("Place mouse over the target within 3 seconds.");
         Console.WriteLine("Press any key to exit...");
@@ -108,7 +108,7 @@ internal partial class Program
 
         #endregion
 
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Needed to function as a TimerCallback")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Parameter is needed to be accepted as a TimerCallback")]
         internal void Move(object? state)
         {
             var m = new Point(); // current mouse position
@@ -122,12 +122,12 @@ internal partial class Program
                 sH = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
                 GetCursorPos(ref s); // store current position around which random moves will be performed
                 l = s; // last position = start position
-                ToggleWindow(false); // hide
+                ToggleWindow(false); // hide entirely
             }
             GetCursorPos(ref m); // store current position to check if user was active
             if (m == l) // user inactive
             {
-                // move mouse randomly (between -50 and +50 in both x and y direction)
+                // move mouse randomly (between -50 and +50 points in both x and y direction)
                 mouse_event((uint)(MouseFlags.Move | MouseFlags.Absolute), (int)(65535.0 * (s.X + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sW), (int)(65535.0 * (s.Y + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sH), 0, 0);
                 InvalidateRect(new IntPtr(GetWindowDC(IntPtr.Zero)), 0, true); // prevent multiple cursor images
             }
