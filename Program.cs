@@ -1,9 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Timer = System.Threading.Timer;
 
 namespace Mauzer;
 
+[SupportedOSPlatform("windows")]
 internal partial class Program
 {
     #region Imports and objects
@@ -62,13 +65,17 @@ internal partial class Program
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-    private const string appName = "Mauzer";
+    private const string INSTREND = "Press any key to exit...";
+    private const string INSTRSTART = "Place mouse over the target within 3 seconds.";
+    private const int MAXMOVE = 51;
+    private const int MINMOVE = 1;
+    private const double POW16 = 65535.0;
 
     #endregion
 
     private static void Main()
     {
-        Console.Title = appName;
+        Console.Title = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyTitleAttribute>().First().Title;
         var mover = new Mover(GetConsoleWindow());
         var moveTimer = new Timer(mover.Move, null, 3000, 5000);
         var tray = new NotifyIcon
@@ -89,12 +96,11 @@ internal partial class Program
         };
         SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED); // prevent Idle-to-Sleep
         mover.ToggleWindow(true);
-        Console.WriteLine("Place mouse over the target within 3 seconds.");
-        Console.WriteLine("Press any key to exit...");
+        Console.WriteLine(INSTRSTART);
         Application.Run();
     }
 
-    private class Mover( nint windowHandle)
+    private class Mover(nint windowHandle)
     {
         #region Objects and variables
 
@@ -123,12 +129,14 @@ internal partial class Program
                 GetCursorPos(ref s); // store current position around which random moves will be performed
                 l = s; // last position = start position
                 ToggleWindow(false); // hide entirely
+                Console.Clear();
+                Console.WriteLine(INSTREND);
             }
             GetCursorPos(ref m); // store current position to check if user was active
             if (m == l) // user inactive
             {
-                // move mouse randomly (between -50 and +50 points in both x and y direction)
-                mouse_event((uint)(MouseFlags.Move | MouseFlags.Absolute), (int)(65535.0 * (s.X + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sW), (int)(65535.0 * (s.Y + ((r.Next(0, 2) * 2 - 1) * r.Next(1, 51)) + 1) / sH), 0, 0);
+                // move mouse randomly (between -1 and -50 or between +1 and +50 points in both x and y direction)
+                mouse_event((uint)(MouseFlags.Move | MouseFlags.Absolute), (int)(POW16 * (s.X + ((r.Next(0, 2) * 2 - 1) * r.Next(MINMOVE, MAXMOVE)) + 1) / sW), (int)(POW16 * (s.Y + ((r.Next(0, 2) * 2 - 1) * r.Next(MINMOVE, MAXMOVE)) + 1) / sH), 0, 0);
                 InvalidateRect(new IntPtr(GetWindowDC(IntPtr.Zero)), 0, true); // prevent multiple cursor images
             }
             else // user active

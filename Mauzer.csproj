@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<Platform>win-x64</Platform>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<StartupObject>Mauzer.Program</StartupObject>
@@ -12,20 +13,21 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<IsPublishable>True</IsPublishable>
 		<Optimize>true</Optimize>
-		<NoStdLib>true</NoStdLib>
-		<NoStandardLibraries>true</NoStandardLibraries>
 		<NoConfig>true</NoConfig>
 		<ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DebugType>full</DebugType>
+		<DebugType>none</DebugType>
 		<CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
 		<IsPublishable>False</IsPublishable>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DebugType>full</DebugType>
+		<DebugType>none</DebugType>
 		<CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-		<IsPublishable>False</IsPublishable>
+		<IsPublishable>True</IsPublishable>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="kmousetool.ico" />
