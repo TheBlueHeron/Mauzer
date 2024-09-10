@@ -159,6 +159,7 @@ internal partial class Program
             {
                 // move mouse randomly (between -1 and -50 or between +1 and +50 points in both x and y direction)
                 mouse_event((uint)(MouseFlags.Move | MouseFlags.Absolute), (int)(POW16 * (s.X + ((r.Next(0, 2) * 2 - 1) * r.Next(MINMOVE, MAXMOVE)) + 1) / sW), (int)(POW16 * (s.Y + ((r.Next(0, 2) * 2 - 1) * r.Next(MINMOVE, MAXMOVE)) + 1) / sH), 0, 0);
+                GetCursorPos(ref l); // store current position for next round
                 InvalidateRect(new IntPtr(GetWindowDC(IntPtr.Zero)), 0, true); // prevent multiple cursor images
             }
             else // user active
