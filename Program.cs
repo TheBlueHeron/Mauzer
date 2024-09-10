@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Timer = System.Threading.Timer;
@@ -38,9 +37,6 @@ internal partial class Program
         ES_SYSTEM_REQUIRED = 0x00000001
     }
 
-    [LibraryImport("kernel32.dll")]
-    private static partial IntPtr GetConsoleWindow();
-
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetCursorPos(ref Point lpPoint);
@@ -61,77 +57,98 @@ internal partial class Program
     [LibraryImport("kernel32.dll")]
     private static partial EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-    private const string INSTREND = "Press any key to exit...";
-    private const string INSTRSTART = "Place mouse over the target within 3 seconds.";
     private const int MAXMOVE = 51;
     private const int MINMOVE = 1;
     private const double POW16 = 65535.0;
 
     #endregion
 
+    [STAThread]
     private static void Main()
     {
-        Console.Title = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyTitleAttribute>().First().Title;
-        var mover = new Mover(GetConsoleWindow());
-        var moveTimer = new Timer(mover.Move, null, 3000, 5000);
-        var tray = new NotifyIcon
-        {
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
-            Text = Console.Title,
-            BalloonTipTitle = Console.Title,
-            BalloonTipText = Console.Title,
-            Visible = true,
-        };
-        tray.DoubleClick += (s, e) => {
-            mover.ToggleWindow(true);
-            Console.ReadKey();
-            moveTimer.Dispose();
-            tray.Dispose();
-            Environment.ExitCode = 0;
-            Application.Exit();
-        };
         SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED); // prevent Idle-to-Sleep
-        mover.ToggleWindow(true);
-        Console.WriteLine(INSTRSTART);
-        Application.Run();
+        Application.EnableVisualStyles();
+        ApplicationConfiguration.Initialize();
+        Application.Run(new AppContext());
     }
 
-    private class Mover(nint windowHandle)
+    private class AppContext : ApplicationContext
     {
         #region Objects and variables
 
         private readonly Random r = new(Environment.TickCount);
+        private NotifyIcon? trayIcon;
+        private ContextMenuStrip? ctxMenu;
+        private ToolStripMenuItem? mnuClose;
+        private readonly Timer moveTimer;
+
         private Point l = new(); // last mouse position
         private Point s = new(); // first mouse position
         private int sW, sH;
 
-        private const int SW_SHOW = 5;
-        private const int SW_HIDE = 0;
+        #endregion
+
+        #region Construction
+
+        public AppContext()
+        {
+            InitializeCursor();
+            InitializeTrayIcon();
+            moveTimer = new Timer(Move, null, 5000, 5000);
+        }
 
         #endregion
 
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Parameter is needed to be accepted as a TimerCallback")]
-        internal void Move(object? state)
+        private void InitializeCursor()
+        {
+            using var g = Graphics.FromHwnd(IntPtr.Zero);
+            var desktop = g.GetHdc();
+
+            sW = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPHORZRES); // store screen resolution
+            sH = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
+            GetCursorPos(ref s); // store current position around which random moves will be performed
+            l = s; // last position = start position
+        }
+
+        private void InitializeTrayIcon()
+        {
+            var title = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyTitleAttribute>().First().Title;
+
+            trayIcon = new NotifyIcon
+            {
+                Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
+                Text = title,
+                BalloonTipIcon = ToolTipIcon.Info,
+                BalloonTipTitle = title + " usage",
+                BalloonTipText = $"Place your mouse over the target application within 5 seconds after starting {title}.",
+                Visible = true,
+            };
+            trayIcon.DoubleClick += (s, e) => {
+                trayIcon.ShowBalloonTip(10000);
+            };
+            ctxMenu = new ContextMenuStrip();
+            mnuClose = new ToolStripMenuItem();
+            ctxMenu.SuspendLayout();
+            ctxMenu.Items.AddRange([mnuClose]);
+            ctxMenu.Name = "ctxtMenu";
+            ctxMenu.Size = new Size(153, 70);
+            mnuClose.Name = "mnuClose";
+            mnuClose.Size = new Size(152, 22);
+            mnuClose.Text = $"Close {title}";
+            mnuClose.Click += (s, e) => {
+                moveTimer.Dispose();
+                trayIcon.Dispose();
+                Environment.ExitCode = 0;
+                Application.Exit();
+            };
+            ctxMenu.ResumeLayout(false);
+            trayIcon.ContextMenuStrip = ctxMenu;
+        }
+
+        private void Move(object? state)
         {
             var m = new Point(); // current mouse position
 
-            if (s.X == 0 && s.Y == 0) // first trigger
-            {
-                using var g = Graphics.FromHwnd(IntPtr.Zero);
-                var desktop = g.GetHdc();
-                
-                sW = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPHORZRES); // store screen resolution
-                sH = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
-                GetCursorPos(ref s); // store current position around which random moves will be performed
-                l = s; // last position = start position
-                ToggleWindow(false); // hide entirely
-                Console.Clear();
-                Console.WriteLine(INSTREND);
-            }
             GetCursorPos(ref m); // store current position to check if user was active
             if (m == l) // user inactive
             {
@@ -143,11 +160,6 @@ internal partial class Program
             {
                 l = m; // update last mouse position to current
             }
-        }
-
-        internal void ToggleWindow(bool show)
-        {
-            ShowWindow(windowHandle, show ? SW_SHOW : SW_HIDE);
         }
     }
 }
