@@ -106,8 +106,6 @@ internal partial class Program
 
             sW = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPHORZRES); // store screen resolution
             sH = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
-            GetCursorPos(ref s); // store current position around which random moves will be performed
-            l = s; // last position = start position
         }
 
         private void InitializeTrayIcon()
@@ -147,9 +145,16 @@ internal partial class Program
 
         private void Move(object? state)
         {
+            if (s.X == 0 && s.Y == 0)
+            {
+                GetCursorPos(ref s); // store current position around which random moves will be performed
+                l = s; // last position = start position
+            }
+
             var m = new Point(); // current mouse position
 
             GetCursorPos(ref m); // store current position to check if user was active
+
             if (m == l) // user inactive
             {
                 // move mouse randomly (between -1 and -50 or between +1 and +50 points in both x and y direction)
