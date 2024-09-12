@@ -141,6 +141,7 @@ internal partial class Program
             };
             ctxMenu.ResumeLayout(false);
             trayIcon.ContextMenuStrip = ctxMenu;
+            trayIcon.ShowBalloonTip(5000);
         }
 
         private void Move(object? state)
