@@ -13,4 +13,4 @@ This is basically achieved by calling SetThreadExecutionState and performing ran
 ## Prerequisites
 
 * Windows 10/11 x64
-* .NET 9 Runtime installed (download it [here]:https://dotnet.microsoft.com/en-us/download/dotnet/9.0 )
+* .NET 9 Runtime installed (download it [here](https://dotnet.microsoft.com/en-us/download/dotnet/9.0 ))
