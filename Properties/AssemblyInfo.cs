@@ -5,4 +5,4 @@
 [assembly: AssemblyCompany("The Blue Heron")]
 [assembly: AssemblyCopyright("All rights released.")]
 [assembly: AssemblyTitle("Mauzer")]
-[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.1.0.0")]

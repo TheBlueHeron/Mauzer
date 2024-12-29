@@ -8,7 +8,7 @@
 		<StartupObject>Mauzer.Program</StartupObject>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<ApplicationIcon>kmousetool.ico</ApplicationIcon>
+		<ApplicationIcon>mouse.ico</ApplicationIcon>
 		<SignAssembly>False</SignAssembly>
 		<UseWindowsForms>true</UseWindowsForms>
 		<IsPublishable>True</IsPublishable>
@@ -31,7 +31,7 @@
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>
 	<ItemGroup>
-		<Content Include="kmousetool.ico" />
+	  <Content Include="mouse.ico" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Properties\PublishProfiles\" />
