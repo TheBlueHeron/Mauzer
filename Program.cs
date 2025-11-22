@@ -1,9 +1,12 @@
 ﻿using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Timer = System.Threading.Timer;
 
 namespace Mauzer;
+
+#nullable disable
 
 [SupportedOSPlatform("windows")]
 internal partial class Program
@@ -61,6 +64,11 @@ internal partial class Program
     private const int MINMOVE = 1;
     private const double POW16 = 65535.0;
 
+    private const string _CLOSE = "fmtClose";
+    private const string _INFO = "fmtInfo";
+    private const string _RESOURCES = "Mauzer.Resources";
+    private const string _TITLE = "fmtTitle";
+
     #endregion
 
     [STAThread]
@@ -77,9 +85,9 @@ internal partial class Program
         #region Objects and variables
 
         private readonly Random r = new(Environment.TickCount);
-        private NotifyIcon? trayIcon;
-        private ContextMenuStrip? ctxMenu;
-        private ToolStripMenuItem? mnuClose;
+        private NotifyIcon trayIcon;
+        private ContextMenuStrip ctxMenu;
+        private ToolStripMenuItem mnuClose;
         private readonly Timer moveTimer;
 
         private Point l = new(); // last mouse position
@@ -111,14 +119,14 @@ internal partial class Program
         private void InitializeTrayIcon()
         {
             var title = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyTitleAttribute>().First().Title;
-
+            var rm = new ResourceManager(_RESOURCES, typeof(Program).Assembly);
             trayIcon = new NotifyIcon
             {
                 Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
                 Text = title,
                 BalloonTipIcon = ToolTipIcon.Info,
-                BalloonTipTitle = title + " usage",
-                BalloonTipText = $"Place your mouse over the target application within 5 seconds after starting {title}.",
+                BalloonTipTitle = string.Format(rm.GetString(_TITLE), title),
+                BalloonTipText = string.Format(rm.GetString(_INFO), title),
                 Visible = true,
             };
             trayIcon.DoubleClick += (s, e) => {
@@ -128,11 +136,9 @@ internal partial class Program
             mnuClose = new ToolStripMenuItem();
             ctxMenu.SuspendLayout();
             ctxMenu.Items.AddRange([mnuClose]);
-            ctxMenu.Name = "ctxtMenu";
             ctxMenu.Size = new Size(153, 70);
-            mnuClose.Name = "mnuClose";
             mnuClose.Size = new Size(152, 22);
-            mnuClose.Text = $"Close {title}";
+            mnuClose.Text = string.Format(rm.GetString(_CLOSE), title);
             mnuClose.Click += (s, e) => {
                 moveTimer.Dispose();
                 trayIcon.Dispose();
@@ -144,7 +150,7 @@ internal partial class Program
             trayIcon.ShowBalloonTip(5000);
         }
 
-        private void Move(object? state)
+        private void Move(object state)
         {
             if (s.X == 0 && s.Y == 0)
             {
