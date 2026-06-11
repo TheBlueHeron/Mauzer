@@ -16,14 +16,16 @@
 		<NoConfig>true</NoConfig>
 		<ApplicationManifest>Properties\app.manifest</ApplicationManifest>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
 		<PackageProjectUrl>https://github.com/TheBlueHeron/Mauzer</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/TheBlueHeron/Mauzer</RepositoryUrl>
-		<AssemblyVersion>1.2.0.0</AssemblyVersion>
-		<FileVersion>1.2.0.0</FileVersion>
+		<AssemblyVersion>1.2.1.0</AssemblyVersion>
+		<FileVersion>1.2.1.0</FileVersion>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 	</PropertyGroup>
 	<PropertyGroup Label="MultilingualAppToolkit">
 		<MultilingualAppToolkitVersion>4.0</MultilingualAppToolkitVersion>
@@ -33,7 +35,7 @@
 		<Authors>Michael Bakker</Authors>
 		<Company>The Blue Heron</Company>
 		<Description>Tray Icon app that prevents screen locking and marking user as 'Away' by other apps like MS Teams.</Description>
-		<Copyright>Copyright © 2025 The Blue Heron</Copyright>
+		<Copyright>Copyright © 2026 The Blue Heron</Copyright>
 		<PackageReleaseNotes>Port to C# 14 for .NET 10.</PackageReleaseNotes>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -44,7 +46,10 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
 		<CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>false</SelfContained>
 		<IsPublishable>True</IsPublishable>
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>

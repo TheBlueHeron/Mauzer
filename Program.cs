@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -9,7 +10,7 @@ namespace Mauzer;
 #nullable disable
 
 [SupportedOSPlatform("windows")]
-internal partial class Program
+internal sealed partial class Program
 {
     #region Imports and objects
 
@@ -80,7 +81,7 @@ internal partial class Program
         Application.Run(new AppContext());
     }
 
-    private class AppContext : ApplicationContext
+    private sealed class AppContext : ApplicationContext
     {
         #region Objects and variables
 
@@ -90,8 +91,8 @@ internal partial class Program
         private ToolStripMenuItem mnuClose;
         private readonly Timer moveTimer;
 
-        private Point l = new(); // last mouse position
-        private Point s = new(); // first mouse position
+        private Point l; // last mouse position
+        private Point s; // first mouse position
         private int sW, sH;
 
         #endregion
@@ -125,8 +126,8 @@ internal partial class Program
                 Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
                 Text = title,
                 BalloonTipIcon = ToolTipIcon.Info,
-                BalloonTipTitle = string.Format(rm.GetString(_TITLE), title),
-                BalloonTipText = string.Format(rm.GetString(_INFO), title),
+                BalloonTipTitle = string.Format(null, rm.GetString(_TITLE, CultureInfo.InvariantCulture), title),
+                BalloonTipText = string.Format(null, rm.GetString(_INFO, CultureInfo.InvariantCulture), title),
                 Visible = true,
             };
             trayIcon.DoubleClick += (s, e) => {
@@ -138,7 +139,7 @@ internal partial class Program
             ctxMenu.Items.AddRange([mnuClose]);
             ctxMenu.Size = new Size(153, 70);
             mnuClose.Size = new Size(152, 22);
-            mnuClose.Text = string.Format(rm.GetString(_CLOSE), title);
+            mnuClose.Text = string.Format(null, rm.GetString(_CLOSE, CultureInfo.InvariantCulture), title);
             mnuClose.Click += (s, e) => {
                 moveTimer.Dispose();
                 trayIcon.Dispose();
